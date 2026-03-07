@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flex Fitness OC — AI Comment-to-DM Agent Demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- INTRO OVERLAY -->
+    <div id="intro-overlay" class="intro-overlay">
+        <div class="intro-content">
+            <div class="intro-logo">FLEX FITNESS OC</div>
+            <h1>AI Comment-to-DM Agent</h1>
+            <p class="intro-sub">See how an intelligent Instagram agent converts comments into conversations — automatically.</p>
+            <div class="intro-steps">
+                <div class="intro-step">
+                    <div class="step-num">1</div>
+                    <div class="step-text">A follower comments a <strong>keyword</strong> on your post</div>
+                </div>
+                <div class="intro-step">
+                    <div class="step-num">2</div>
+                    <div class="step-text">The AI agent <strong>instantly DMs</strong> them with tailored info</div>
+                </div>
+                <div class="intro-step">
+                    <div class="step-num">3</div>
+                    <div class="step-text">The conversation <strong>qualifies the lead</strong> and drives action</div>
+                </div>
+            </div>
+            <button id="start-demo-btn" class="start-btn" onclick="startDemo()">Launch Demo</button>
+        </div>
+    </div>
+
+    <!-- MAIN DEMO -->
+    <div id="demo-container" class="demo-container hidden">
+        <!-- HEADER -->
+        <header class="demo-header">
+            <div class="header-left">
+                <span class="brand">FLEX FITNESS OC</span>
+                <span class="badge">AI Agent Demo</span>
+            </div>
+            <div class="header-right">
+                <button class="reset-btn" onclick="resetDemo()">Reset Demo</button>
+            </div>
+        </header>
+
+        <div class="demo-body">
+            <!-- LEFT: INSTAGRAM POST SIMULATION -->
+            <div class="panel post-panel">
+                <div class="panel-label">Instagram Post</div>
+                <div class="ig-post">
+                    <div class="ig-header">
+                        <div class="ig-avatar">FF</div>
+                        <div class="ig-user-info">
+                            <span class="ig-username">flexfitnessoc</span>
+                            <span class="ig-location">Laguna Hills, CA</span>
+                        </div>
+                        <span class="ig-verified">&#10003;</span>
+                    </div>
+                    <div class="ig-image">
+                        <div class="ig-image-content">
+                            <div class="ig-promo-text">
+                                <span class="promo-headline">NEW YEAR. NEW STANDARD.</span>
+                                <span class="promo-offer">100% OFF ENROLLMENT</span>
+                                <span class="promo-cta">Comment "INFO" to learn more</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ig-actions">
+                        <div class="ig-action-row">
+                            <svg class="ig-icon" viewBox="0 0 24 24"><path d="M16.792 3.904A4.989 4.989 0 0121.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477-.309-1.834-1.535-4.303-3.752C5.141 14.072 2.5 12.167 2.5 9.122a4.989 4.989 0 014.708-5.218 4.21 4.21 0 013.675 1.941c.84 1.175.98 1.763 1.12 1.763s.278-.588 1.11-1.766a4.17 4.17 0 013.679-1.938z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                            <svg class="ig-icon" viewBox="0 0 24 24"><path d="M20.656 17.008a9.993 9.993 0 10-3.59 3.615L22 22z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+                            <svg class="ig-icon" viewBox="0 0 24 24"><line x1="22" y1="3" x2="9.218" y2="10.083" fill="none" stroke="currentColor" stroke-width="2"/><polygon points="22 3 15 22 11 13 2 9 22 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+                        </div>
+                        <div class="ig-likes"><strong>2,847 likes</strong></div>
+                    </div>
+                    <div class="ig-caption">
+                        <strong>flexfitnessoc</strong> Orange County's premier bodybuilding gym. Elite equipment. Real coaching. Spotless space. 24/7 access. You're known by name here.
+                        <br><br>
+                        Comment below to get started:
+                        <br>
+                        <span class="keyword-tag">"INFO"</span> — General info
+                        <br>
+                        <span class="keyword-tag">"PRICING"</span> — Membership rates
+                        <br>
+                        <span class="keyword-tag">"TRAINING"</span> — Personal training
+                        <br>
+                        <span class="keyword-tag">"TOUR"</span> — Book a tour
+                    </div>
+
+                    <!-- COMMENTS -->
+                    <div class="ig-comments" id="comments-section">
+                        <div class="comment existing">
+                            <strong>mike_lifts92</strong> This gym looks insane
+                        </div>
+                        <div class="comment existing">
+                            <strong>sarah_fitjourney</strong> Best gym in OC hands down
+                        </div>
+                    </div>
+
+                    <!-- COMMENT INPUT -->
+                    <div class="ig-comment-input">
+                        <input type="text" id="comment-input" placeholder="Add a comment..." autocomplete="off">
+                        <button id="post-comment-btn" onclick="postComment()">Post</button>
+                    </div>
+                </div>
+
+                <!-- KEYWORD HINTS -->
+                <div class="keyword-hints">
+                    <span class="hint-label">Try these keywords:</span>
+                    <button class="keyword-btn" onclick="quickComment('INFO')">INFO</button>
+                    <button class="keyword-btn" onclick="quickComment('PRICING')">PRICING</button>
+                    <button class="keyword-btn" onclick="quickComment('TRAINING')">TRAINING</button>
+                    <button class="keyword-btn" onclick="quickComment('TOUR')">TOUR</button>
+                    <button class="keyword-btn" onclick="quickComment('HOURS')">HOURS</button>
+                    <button class="keyword-btn" onclick="quickComment('SAUNA')">SAUNA</button>
+                    <button class="keyword-btn" onclick="quickComment('MEALS')">MEALS</button>
+                </div>
+            </div>
+
+            <!-- MIDDLE: AGENT ACTIVITY -->
+            <div class="panel agent-panel">
+                <div class="panel-label">Agent Activity Log</div>
+                <div class="agent-log" id="agent-log">
+                    <div class="agent-entry idle">
+                        <div class="agent-dot"></div>
+                        <span>Agent standing by — monitoring comments...</span>
+                    </div>
+                </div>
+                <div class="agent-stats">
+                    <div class="stat">
+                        <span class="stat-val" id="stat-detected">0</span>
+                        <span class="stat-label">Keywords Detected</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-val" id="stat-dms">0</span>
+                        <span class="stat-label">DMs Sent</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-val" id="stat-leads">0</span>
+                        <span class="stat-label">Leads Captured</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: DM SIMULATION -->
+            <div class="panel dm-panel">
+                <div class="panel-label">Instagram DM</div>
+                <div class="dm-container" id="dm-container">
+                    <div class="dm-placeholder">
+                        <div class="dm-placeholder-icon">
+                            <svg viewBox="0 0 24 24" width="48" height="48"><line x1="22" y1="3" x2="9.218" y2="10.083" fill="none" stroke="#555" stroke-width="1.5"/><polygon points="22 3 15 22 11 13 2 9 22 3" fill="none" stroke="#555" stroke-width="1.5" stroke-linejoin="round"/></svg>
+                        </div>
+                        <p>DM conversation will appear here when a keyword is detected</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM: ANALYTICS PREVIEW -->
+        <div class="analytics-bar">
+            <div class="analytics-item">
+                <span class="analytics-icon">&#128200;</span>
+                <span><strong>Response Time:</strong> &lt; 3 seconds</span>
+            </div>
+            <div class="analytics-item">
+                <span class="analytics-icon">&#127919;</span>
+                <span><strong>Conversion Path:</strong> Comment → DM → Booking</span>
+            </div>
+            <div class="analytics-item">
+                <span class="analytics-icon">&#128336;</span>
+                <span><strong>Availability:</strong> 24/7 automated</span>
+            </div>
+            <div class="analytics-item">
+                <span class="analytics-icon">&#128176;</span>
+                <span><strong>Cost Per Lead:</strong> Near zero</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
