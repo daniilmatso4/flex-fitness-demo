@@ -4,6 +4,8 @@
 
 let stats = { detected: 0, dms: 0, leads: 0 };
 let processing = false;
+let timerInterval = null;
+let timerStart = 0;
 
 // --- KEYWORD RESPONSE DATABASE ---
 const KEYWORD_FLOWS = {
@@ -232,7 +234,71 @@ function updateStats() {
 }
 
 function scrollToBottom(el) {
-    if (el) el.scrollTop = el.scrollHeight;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+}
+
+function getTimestamp() {
+    const now = new Date();
+    return now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+}
+
+function startTimer() {
+    const timerEl = document.getElementById('response-timer');
+    const timerVal = document.getElementById('timer-value');
+    timerEl.classList.add('active');
+    timerEl.classList.remove('done');
+    timerStart = performance.now();
+    timerInterval = setInterval(() => {
+        const elapsed = ((performance.now() - timerStart) / 1000).toFixed(1);
+        timerVal.textContent = elapsed + 's';
+    }, 50);
+}
+
+function stopTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+    const timerEl = document.getElementById('response-timer');
+    const timerVal = document.getElementById('timer-value');
+    const elapsed = ((performance.now() - timerStart) / 1000).toFixed(1);
+    timerVal.textContent = elapsed + 's';
+    timerEl.classList.add('done');
+}
+
+function activateArrow(id) {
+    const arrow = document.getElementById(id);
+    if (arrow) arrow.classList.add('active');
+}
+
+function resetArrows() {
+    document.querySelectorAll('.flow-arrow').forEach(a => a.classList.remove('active'));
+}
+
+function stopKeywordPulse() {
+    document.querySelectorAll('.keyword-btns button').forEach(b => b.classList.remove('pulse-hint'));
+}
+
+function showNotificationToast() {
+    const dmPhone = document.getElementById('dm-phone');
+    if (!dmPhone) return;
+    const screen = dmPhone.querySelector('.phone-screen');
+
+    // Remove any existing notification
+    const existing = screen.querySelector('.ig-notification');
+    if (existing) existing.remove();
+
+    const notif = document.createElement('div');
+    notif.className = 'ig-notification';
+    notif.innerHTML = `
+        <div class="notif-icon"><div class="notif-icon-inner">FF</div></div>
+        <div class="notif-body">
+            <div class="notif-app">Instagram</div>
+            <div class="notif-text"><strong>flexfitnessoc</strong> sent you a message</div>
+        </div>
+        <div class="notif-time">now</div>
+    `;
+    screen.appendChild(notif);
+
+    // Auto-remove after animation
+    setTimeout(() => notif.remove(), 3500);
 }
 
 // --- INTRO ---
@@ -248,6 +314,37 @@ function startDemo() {
     }, 600);
 }
 
+async function startAutoDemo() {
+    startDemo();
+    await sleep(1200);
+
+    // Step 1: Show a non-keyword comment first (realism)
+    addComment('oc_gymrat', 'This place looks legit', false);
+    await sleep(1500);
+
+    // Step 2: Trigger keyword
+    quickComment('INFO');
+
+    // Step 3: Wait for the DM flow to finish, then click a quick reply
+    // The processing flag will be false when done
+    await waitForProcessing();
+    await sleep(1500);
+
+    // Step 4: Auto-click a quick reply
+    const quickBtn = document.querySelector('#dm-quick-replies .dm-quick-btn');
+    if (quickBtn) quickBtn.click();
+}
+
+function waitForProcessing() {
+    return new Promise(resolve => {
+        const check = () => {
+            if (!processing) return resolve();
+            setTimeout(check, 200);
+        };
+        check();
+    });
+}
+
 // --- COMMENTS ---
 
 function postComment() {
@@ -255,6 +352,7 @@ function postComment() {
     const text = input.value.trim();
     if (!text) return;
     input.value = '';
+    document.getElementById('post-comment-btn').classList.remove('active');
     addComment('you_fitness', text, true);
 }
 
@@ -312,17 +410,22 @@ async function triggerAgent(keyword) {
     const log = document.getElementById('agent-log');
     log.innerHTML = '';
 
+    stopKeywordPulse();
+    startTimer();
+    activateArrow('arrow-1');
+
     for (let i = 0; i < flow.agentSteps.length; i++) {
         const step = flow.agentSteps[i];
         await sleep(600 + i * 200);
 
         const entry = document.createElement('div');
         entry.className = `agent-entry ${step.type}`;
-        entry.innerHTML = `<div class="agent-dot"></div><span>${step.text}</span>`;
+        entry.innerHTML = `<div class="agent-dot"></div><span>${step.text}</span><span class="agent-ts">${getTimestamp()}</span>`;
         log.appendChild(entry);
         scrollToBottom(log);
 
         if (step.type === 'detect') { stats.detected++; updateStats(); }
+        if (step.type === 'action') { activateArrow('arrow-2'); }
         if (step.type === 'success') { stats.dms++; stats.leads++; updateStats(); }
     }
 
@@ -335,6 +438,9 @@ async function triggerAgent(keyword) {
 async function startDMConversation(keyword) {
     const flow = KEYWORD_FLOWS[keyword];
     const container = document.getElementById('dm-container');
+
+    // Show IG notification toast on the DM phone
+    showNotificationToast();
 
     container.innerHTML = `
         <div class="dm-thread">
@@ -375,6 +481,8 @@ async function startDMConversation(keyword) {
     `;
 
     const messagesEl = document.getElementById('dm-messages');
+    const dmPhone = document.getElementById('dm-phone');
+    let firstMessage = true;
 
     for (const msg of flow.messages) {
         await sleep(msg.delay);
@@ -393,6 +501,16 @@ async function startDMConversation(keyword) {
         msgEl.textContent = msg.text;
         messagesEl.appendChild(msgEl);
         scrollToBottom(messagesEl);
+
+        if (firstMessage) {
+            firstMessage = false;
+            stopTimer();
+            if (dmPhone) {
+                const screen = dmPhone.querySelector('.phone-screen');
+                screen.classList.add('dm-flash');
+                screen.addEventListener('animationend', () => screen.classList.remove('dm-flash'), { once: true });
+            }
+        }
     }
 
     await sleep(500);
@@ -431,7 +549,7 @@ async function handleQuickReply(keyword, reply) {
     const log = document.getElementById('agent-log');
     const entry = document.createElement('div');
     entry.className = 'agent-entry ai';
-    entry.innerHTML = `<div class="agent-dot"></div><span>User replied "${reply}" — AI generating response...</span>`;
+    entry.innerHTML = `<div class="agent-dot"></div><span>User replied "${reply}" — AI generating response...</span><span class="agent-ts">${getTimestamp()}</span>`;
     log.appendChild(entry);
     scrollToBottom(log);
 
@@ -456,7 +574,7 @@ async function handleQuickReply(keyword, reply) {
 
     const successEntry = document.createElement('div');
     successEntry.className = 'agent-entry success';
-    successEntry.innerHTML = `<div class="agent-dot"></div><span>Follow-up delivered — lead engaged</span>`;
+    successEntry.innerHTML = `<div class="agent-dot"></div><span>Follow-up delivered — lead engaged</span><span class="agent-ts">${getTimestamp()}</span>`;
     log.appendChild(successEntry);
     scrollToBottom(log);
 
@@ -483,6 +601,20 @@ function resetDemo() {
     stats = { detected: 0, dms: 0, leads: 0 };
     updateStats();
     processing = false;
+
+    // Reset timer
+    if (timerInterval) clearInterval(timerInterval);
+    const timerEl = document.getElementById('response-timer');
+    timerEl.classList.remove('active', 'done');
+    document.getElementById('timer-value').textContent = '0.0s';
+
+    // Reset arrows
+    resetArrows();
+
+    // Re-enable keyword pulse on first 4
+    document.querySelectorAll('.keyword-btns button').forEach((btn, i) => {
+        if (i < 4) btn.classList.add('pulse-hint');
+    });
 
     document.getElementById('comments-section').innerHTML = `
         <div class="ig-comment">
@@ -525,8 +657,39 @@ function resetDemo() {
 
 // --- INIT ---
 
+const KEYWORD_KEYS = ['INFO', 'PRICING', 'TRAINING', 'TOUR', 'HOURS', 'SAUNA', 'MEALS'];
+
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('comment-input').addEventListener('keydown', (e) => {
+    const input = document.getElementById('comment-input');
+    const postBtn = document.getElementById('post-comment-btn');
+
+    input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') { e.preventDefault(); postComment(); }
+    });
+
+    // Post button active state
+    input.addEventListener('input', () => {
+        if (input.value.trim()) {
+            postBtn.classList.add('active');
+        } else {
+            postBtn.classList.remove('active');
+        }
+    });
+
+    // Keyboard shortcuts: 1-7 for keywords
+    document.addEventListener('keydown', (e) => {
+        if (document.activeElement === input) return;
+        const overlay = document.getElementById('intro-overlay');
+        if (overlay && overlay.style.display !== 'none') return;
+
+        const num = parseInt(e.key);
+        if (num >= 1 && num <= 7) {
+            e.preventDefault();
+            quickComment(KEYWORD_KEYS[num - 1]);
+        }
+        if (e.key === 'r' || e.key === 'R') {
+            e.preventDefault();
+            resetDemo();
+        }
     });
 });

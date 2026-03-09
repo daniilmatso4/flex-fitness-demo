@@ -27,7 +27,10 @@
                     <div class="step-text">The conversation <strong>qualifies the lead</strong> and drives action</div>
                 </div>
             </div>
-            <button class="start-btn" onclick="startDemo()">Launch Demo</button>
+            <div class="intro-btn-group">
+                <button class="start-btn" onclick="startDemo()">Launch Demo</button>
+                <button class="start-btn auto-btn" onclick="startAutoDemo()">Watch It Work</button>
+            </div>
         </div>
     </div>
 
@@ -47,7 +50,7 @@
 
         <div class="demo-layout">
             <!-- ========== LEFT: INSTAGRAM POST ========== -->
-            <div class="phone-frame">
+            <div class="phone-frame" id="post-phone">
                 <div class="phone-screen">
                     <!-- IG Top Nav -->
                     <div class="ig-nav">
@@ -151,15 +154,20 @@
                 <div class="keyword-strip">
                     <span class="keyword-strip-label">Try a keyword:</span>
                     <div class="keyword-btns">
-                        <button onclick="quickComment('INFO')">INFO</button>
-                        <button onclick="quickComment('PRICING')">PRICING</button>
-                        <button onclick="quickComment('TRAINING')">TRAINING</button>
-                        <button onclick="quickComment('TOUR')">TOUR</button>
-                        <button onclick="quickComment('HOURS')">HOURS</button>
-                        <button onclick="quickComment('SAUNA')">SAUNA</button>
-                        <button onclick="quickComment('MEALS')">MEALS</button>
+                        <button onclick="quickComment('INFO')" data-key="1" class="pulse-hint">INFO</button>
+                        <button onclick="quickComment('PRICING')" data-key="2" class="pulse-hint">PRICING</button>
+                        <button onclick="quickComment('TRAINING')" data-key="3" class="pulse-hint">TRAINING</button>
+                        <button onclick="quickComment('TOUR')" data-key="4" class="pulse-hint">TOUR</button>
+                        <button onclick="quickComment('HOURS')" data-key="5">HOURS</button>
+                        <button onclick="quickComment('SAUNA')" data-key="6">SAUNA</button>
+                        <button onclick="quickComment('MEALS')" data-key="7">MEALS</button>
                     </div>
                 </div>
+            </div>
+
+            <!-- Flow Arrow: Post → Agent -->
+            <div class="flow-arrow" id="arrow-1">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
             </div>
 
             <!-- ========== MIDDLE: AGENT LOG ========== -->
@@ -173,6 +181,10 @@
                         <div class="agent-dot"></div>
                         <span>Monitoring @flexfitnessoc comments...</span>
                     </div>
+                </div>
+                <div class="response-timer" id="response-timer">
+                    <div class="timer-dot"></div>
+                    <span id="timer-value">0.0s</span>
                 </div>
                 <div class="agent-stats">
                     <div class="agent-stat">
@@ -190,8 +202,13 @@
                 </div>
             </div>
 
+            <!-- Flow Arrow: Agent → DM -->
+            <div class="flow-arrow" id="arrow-2">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+            </div>
+
             <!-- ========== RIGHT: INSTAGRAM DM ========== -->
-            <div class="phone-frame">
+            <div class="phone-frame" id="dm-phone">
                 <div class="phone-screen">
                     <div id="dm-container" class="dm-container">
                         <!-- DM Placeholder -->
@@ -224,6 +241,79 @@
             <div class="bottom-stat">
                 <span class="bottom-stat-icon">&#128178;</span>
                 Cost per lead: <strong>~$0</strong>
+            </div>
+        </div>
+
+        <!-- ROI PROJECTION -->
+        <div class="roi-section" id="roi-section">
+            <div class="roi-header">
+                <h2 class="roi-title">Projected Monthly Impact</h2>
+                <p class="roi-subtitle">Based on your current engagement levels</p>
+            </div>
+            <div class="roi-funnel">
+                <div class="roi-step">
+                    <div class="roi-step-val" id="roi-comments">50</div>
+                    <div class="roi-step-lbl">Keyword Comments<br><span>per month</span></div>
+                </div>
+                <div class="roi-arrow">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+                    <span>30%</span>
+                </div>
+                <div class="roi-step">
+                    <div class="roi-step-val" id="roi-tours">15</div>
+                    <div class="roi-step-lbl">Tour Bookings<br><span>qualified leads</span></div>
+                </div>
+                <div class="roi-arrow">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+                    <span>40%</span>
+                </div>
+                <div class="roi-step">
+                    <div class="roi-step-val" id="roi-signups">6</div>
+                    <div class="roi-step-lbl">New Members<br><span>conversions</span></div>
+                </div>
+                <div class="roi-arrow last">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+                    <span>$120/mo</span>
+                </div>
+                <div class="roi-step highlight">
+                    <div class="roi-step-val" id="roi-revenue">$720</div>
+                    <div class="roi-step-lbl">Monthly Recurring<br><span>new revenue</span></div>
+                </div>
+            </div>
+            <div class="roi-note">
+                That's <strong id="roi-annual">$8,640</strong>/year in new recurring revenue — from comments you're already getting.
+                <br>No ad spend. No extra staff. Just an AI agent working 24/7.
+            </div>
+        </div>
+
+        <!-- NEXT STEPS -->
+        <div class="next-steps-section">
+            <h2 class="next-steps-title">Ready to Turn Comments Into Revenue?</h2>
+            <div class="next-steps-grid">
+                <div class="next-step-card">
+                    <div class="next-step-num">1</div>
+                    <div class="next-step-text">
+                        <strong>We connect to your Instagram</strong>
+                        <span>Secure OAuth — takes 5 minutes. You stay in control.</span>
+                    </div>
+                </div>
+                <div class="next-step-card">
+                    <div class="next-step-num">2</div>
+                    <div class="next-step-text">
+                        <strong>We customize your AI agent</strong>
+                        <span>Your voice, your offers, your booking flow. We handle everything.</span>
+                    </div>
+                </div>
+                <div class="next-step-card">
+                    <div class="next-step-num">3</div>
+                    <div class="next-step-text">
+                        <strong>Go live & start converting</strong>
+                        <span>Your agent works 24/7 — every comment becomes a conversation.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="next-steps-footer">
+                Built specifically for <strong>Flex Fitness OC</strong>
             </div>
         </div>
     </div>
